@@ -1,0 +1,57 @@
+---
+title: "Practice RMarkdown"
+author: "abayard"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(readr)
+```
+
+## Intro
+
+#### This data set contains North Pole Environmental Observatory Bottle Chemistry data; including: Niskin bottle samples for measurements of salinity, oxygen isotopes composition, total alkalinity, and concentrations of phosphate, silicic acid, nitrate, nitrite, ammonium, and barium
+
+#### Here is the data [link](https://arcticdata.io/catalog/view/doi:10.18739/A25T3FZ8X)
+
+### Read data
+```{r}
+bg_chem <- read_csv("data/BGchem2008data.csv")
+```
+```{r}
+colnames(bg_chem)
+
+str(bg_chem)
+
+head(bg_chem)
+```
+
+## Analysis
+
+### Calc summary stats
+
+```{r stats}
+nitrate <- mean(bg_chem$NO3)
+nitrite <- mean(bg_chem$NO2)
+amm <- mean(bg_chem$NH4)
+phos <- mean(bg_chem$P)
+```
+
+
+### calculate mean Redfield ratio
+
+```{r ratio}
+ratio <- (nitrate + nitrite + amm)/phos
+```
+
+The Redfield ratio in this data set is approx.
+
+### Plot Redfield ratio
+
+```{r plot, echo=FALSE}
+plot(bg_chem$P, bg_chem$NO2 + bg_chem$NO3 + bg_chem$NH4)
+```
+

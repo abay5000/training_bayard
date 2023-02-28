@@ -1,0 +1,31 @@
+| Col1 | Col2 | Col3 |
+|------|------|------|
+|      |      |      |
+|      |      |      |
+|      |      |      |
+
+: testing table
+
+---
+title: "Intro to RMarkdown"
+author: "abayard"
+date: "2023-02-27"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# R Markdown
+
+This is *italic*
+
+This is **bold**
+```{r}
+x<-4*3
+paste("hello")
+
+
+```
+
