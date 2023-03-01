@@ -1,0 +1,194 @@
+---
+title: "Data Cleaning and Manipulation"
+author: "bayard"
+date: "2023-03-01"
+output: html_document
+---
+
+---
+title: "Data Cleaning and Manipulation"
+author: "bayard"
+date: "2023-03-01"
+output: html_document
+---
+
+## Load Libraries
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(readr)
+```
+
+```{r}
+#load data for PC
+catch_original <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.302.1")
+
+```
+
+## clean data (use minus sign to exclude columns)
+
+```{r}
+# remove the all and notesRegCode columns from orig file
+catch_data <- catch_original %>% 
+  select(Region, Year, Chinook, Sockeye, Coho, Pink, Chum)
+
+head(catch_data)
+
+glimpse(catch_data)
+```
+
+```{r}
+# Mutate chinook class from character to numeric
+catch_clean <- catch_data %>%
+  mutate(Chinook = as.numeric(Chinook))
+
+# search for the na value
+i <- which(is.na(catch_clean$Chinook))
+i
+catch_data[i,]
+
+catch_clean <- catch_data %>%
+  mutate(Chinook = if_else(Chinook == "I", "1", Chinook)) %>%
+  mutate(Chinook = as.integer(Chinook))
+
+glimpse(catch_clean)
+```
+
+```{r}
+# Pivot longer practice; species names go into one column called "species" for example
+
+catch_long <- catch_clean %>%
+  pivot_longer(cols = -c(Region, Year), names_to = "species", values_to = "catch")
+
+head(catch_long)
+
+# pivot wider practice
+
+catch_wide <- catch_long %>%
+  pivot_wider(names_from = species, values_from= catch)
+
+head(catch_wide)
+```
+## Practice renaming columns
+
+```{r}
+catch_long <- catch_long %>%
+  rename(catch_thousands = catch)
+
+head(catch_long)
+```
+
+## Add columns with mutate function
+```{r}
+catch_long <- catch_long %>%
+  mutate(catch = catch_thousands *1000)
+
+head(catch_long)
+
+# remove catch thousands
+
+catch_long <- catch_long %>%
+  mutate(catch = catch_thousands * 1000) %>%
+  select(-catch_thousands)
+
+head(catch_long)
+```
+## Practice group by
+
+```{r}
+mean_region <- catch_long %>%
+  group_by(Region) %>%
+  summarise(catch_mean = mean(catch))
+
+head(mean_region)
+
+# summarize count by region
+
+n_region <- catch_long %>%
+  group_by(Region) %>%
+  summarize(n = n())
+
+head(n_region)
+```
+
+## Lesson of filtering
+```{r}
+SSE_catch <- catch_long %>%
+  filter(Region == "SSE")
+
+head(SSE_catch)
+```
+## filter catches > 1million fish
+```{r}
+Million_catch <- catch_long %>%
+  filter(catch > 1000000)
+
+head(Million_catch)
+```
+
+## arrange 
+
+```{r}
+mean_region <- catch_long %>%
+  group_by(Region) %>%
+  summarize(mean_catch = mean(catch)) %>%
+  arrange(desc(mean_catch))
+
+head(mean_region)
+```
+
+## Joins in dplyr using left join
+
+```{r}
+region_defs <- read.csv("https://knb.ecoinformatics.org/knb/d1/mn/v2/object/df35b.303.1") %>% 
+    select(code, mgmtArea)
+
+head(region_defs)
+```
+## Join our data
+
+```{r}
+catch_joined <- left_join(catch_long, region_defs, by = c("Region" = "code"))
+
+head(catch_joined)
+```
+
+
+```{r}
+region_defs <- region_defs %>% 
+  rename(Region = code, Region_Name = mgmtArea)
+
+catch_joined <- left_join(catch_long, region_defs, by = c("Region"))
+
+head(catch_joined)
+                          
+```
+## Practice separate
+```{r}
+sites_df <- data.frame(site = c("HAW-101",
+                                "HAW-103",
+                                "OAH-320",
+                                "OAH-219",
+                                "MAI-039"))
+
+sites_df %>% 
+  separate(site, c("island", "site_number"), "-")
+```
+
+```{r}
+dates_df <- data.frame(year = c("1930",
+                                "1930",
+                                "1930"),
+                       month = c("12",
+                                "12",
+                                "12"),
+                       day = c("14",
+                               "15",
+                               "16"))
+
+dates_df %>% 
+  unite(date, year, month, day, sep = "-")
+```
+
+
